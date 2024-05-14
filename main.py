@@ -36,7 +36,7 @@ class Bird(pygame.sprite.Sprite):
         self.index = 0
         self.counter = 0
         for num in range(1, 4):
-            img = pygame.image.load(f"img/bird{num}.png")
+            img = pygame.image.load(f"img/Bird{num}.png")
             self.images.append(img)
         self.image = self.images[self.index]
         self.rect = self.image.get_rect()
@@ -135,9 +135,11 @@ while run:
 
     # Score Check
     if len(pipe_group):
-        if flappy.rect.left > pipe_group.sprites()[0].rect.left\
-            and flappy.rect.right < pipe_group.sprites()[0].rect.right\
-            and PASS_PIPE == False:
+        if (
+            flappy.rect.left > pipe_group.sprites()[0].rect.left
+            and flappy.rect.right < pipe_group.sprites()[0].rect.right
+            and PASS_PIPE == False
+        ):
             PASS_PIPE = True
 
         if PASS_PIPE:
@@ -145,16 +147,15 @@ while run:
                 SCORE += 1
                 PASS_PIPE = False
 
-
     # Ground Collision
     if flappy.rect.bottom > 555:
         GAME_OVER = True
         FLYING = False
-    
+
     # Pipe Collision
     if pygame.sprite.groupcollide(bird_group, pipe_group, False, False):
         GAME_OVER = True
-        #FLYING = False
+        # FLYING = False
 
     if FLYING and not GAME_OVER:
         # Generate new pipes
