@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+from random import randint
 
 pygame.init()
 
@@ -12,6 +13,11 @@ GROUND_SCROLL = 0
 SCROLL_SPEED = 4
 FLYING = False
 GAME_OVER = False
+PIPE_GAP = 150
+PIPE_FREQUENCY = 1750  # millisec
+LAST_PIPE = pygame.time.get_ticks()
+SCORE = 0
+PASS_PIPE = False
 
 # Game Screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -78,15 +84,27 @@ class Bird(pygame.sprite.Sprite):
 
             # Rotate
             self.image = pygame.transform.rotate(self.images[self.index], self.vel * -2)
+        else:
+            self.image = pygame.transform.rotate(self.images[self.index], -70)
 
 
 class Pipe(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, position):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("img/pipe.png")
         self.rect = self.image.get_rect()
-        self.rect.topleft = [x,y]
+        # Pos 1 = top , pos -1 = bottom
+        if position == 1:
+            self.image = pygame.transform.flip(self.image, False, True)
+            self.rect.bottomleft = [x, y - int(PIPE_GAP / 2)]
+        elif position == -1:
+            self.rect.topleft = [x, y + int(PIPE_GAP / 2)]
 
+    def update(self):
+        if FLYING and not GAME_OVER:
+            self.rect.x -= SCROLL_SPEED
+        if self.rect.right < 0:
+            self.kill()
 
 
 bird_group = pygame.sprite.Group()
@@ -94,7 +112,6 @@ pipe_group = pygame.sprite.Group()
 
 flappy = Bird(100, int(SCREEN_HEIGHT / 2))
 bird_group.add(flappy)
-
 
 # Game Loop
 run = True
@@ -112,17 +129,45 @@ while run:
     bird_group.draw(screen)
     bird_group.update()
 
-    #Draw Pipes
+    # Draw Pipes
     pipe_group.draw(screen)
     pipe_group.update()
 
-    # Check if Bird hits the ground
+    # Score Check
+    if len(pipe_group):
+        if flappy.rect.left > pipe_group.sprites()[0].rect.left\
+            and flappy.rect.right < pipe_group.sprites()[0].rect.right\
+            and PASS_PIPE == False:
+            PASS_PIPE = True
+
+        if PASS_PIPE:
+            if flappy.rect.left > pipe_group.sprites()[0].rect.right:
+                SCORE += 1
+                PASS_PIPE = False
+
+
+    # Ground Collision
     if flappy.rect.bottom > 555:
         GAME_OVER = True
         FLYING = False
+    
+    # Pipe Collision
+    if pygame.sprite.groupcollide(bird_group, pipe_group, False, False):
+        GAME_OVER = True
+        #FLYING = False
 
-    # Scroll ground
-    if GAME_OVER == False:
+    if FLYING and not GAME_OVER:
+        # Generate new pipes
+        time_now = pygame.time.get_ticks()
+        if time_now - LAST_PIPE > PIPE_FREQUENCY:
+            pipe_height = randint(-100, 100)
+            btm_pipe = Pipe(SCREEN_WIDTH, int(SCREEN_HEIGHT / 2) + pipe_height, -1)
+            top_pipe = Pipe(SCREEN_WIDTH, int(SCREEN_HEIGHT / 2) + pipe_height, 1)
+            pipe_group.add(btm_pipe)
+            pipe_group.add(top_pipe)
+            LAST_PIPE = time_now
+
+        # Scroll ground
         screen.blit(ground, (GROUND_SCROLL, 555))
         GROUND_SCROLL -= SCROLL_SPEED
         if abs(GROUND_SCROLL) > 35:
