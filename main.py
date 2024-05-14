@@ -19,6 +19,12 @@ LAST_PIPE = pygame.time.get_ticks()
 SCORE = 0
 PASS_PIPE = False
 
+# Font
+font = pygame.font.SysFont("Bauhaus 93", 60)
+
+# Colours
+white = (255, 255, 255)
+
 # Game Screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Flappy Bird")
@@ -26,6 +32,12 @@ pygame.display.set_caption("Flappy Bird")
 # Load Images
 bg = pygame.image.load("img/bg.png")
 ground = pygame.image.load("img/ground.png")
+
+
+# Text
+def draw_text(text, font, text_col, x, y):
+    img = font.render(text, True, text_col)
+    screen.blit(img, (x, y))
 
 
 # Bird
@@ -146,6 +158,8 @@ while run:
             if flappy.rect.left > pipe_group.sprites()[0].rect.right:
                 SCORE += 1
                 PASS_PIPE = False
+
+    draw_text(str(SCORE), font, white, int(SCREEN_WIDTH / 2), 20)
 
     # Ground Collision
     if flappy.rect.bottom > 555:
