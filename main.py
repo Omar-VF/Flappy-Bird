@@ -44,12 +44,13 @@ def draw_text(text, font, text_col, x, y):
 class Bird(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.images = []
+        self.images = [
+            pygame.image.load("img/Bird1.png"),
+            pygame.image.load("img/Bird2.png"),
+            pygame.image.load("img/Bird3.png"),
+        ]
         self.index = 0
         self.counter = 0
-        for num in range(1, 4):
-            img = pygame.image.load(f"img/Bird{num}.png")
-            self.images.append(img)
         self.image = self.images[self.index]
         self.rect = self.image.get_rect()
         self.rect.center = [x, y]
