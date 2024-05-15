@@ -9,8 +9,8 @@ SCREEN_WIDTH = 650
 SCREEN_HEIGHT = 685
 CLOCK = pygame.time.Clock()
 FPS = 60
-GROUND_SCROLL = 0
 SCROLL_SPEED = 4
+GROUND_SCROLL = 0
 FLYING = False
 GAME_OVER = False
 PIPE_GAP = 150
@@ -18,6 +18,7 @@ PIPE_FREQUENCY = 1750  # millisec
 LAST_PIPE = pygame.time.get_ticks()
 SCORE = 0
 PASS_PIPE = False
+ZOOM = False
 
 # Font
 font = pygame.font.SysFont("Bauhaus 93", 60)
@@ -32,12 +33,21 @@ pygame.display.set_caption("Flappy Bird")
 # Load Images
 bg = pygame.image.load("img/bg.png")
 ground = pygame.image.load("img/ground.png")
+button_img = pygame.image.load("img/restart.png")
 
 
 # Text
 def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
     screen.blit(img, (x, y))
+
+
+def reset_game():
+    pipe_group.empty()
+    flappy.rect.x = 100
+    flappy.rect.y = int(SCREEN_HEIGHT / 2)
+    SCORE = 0
+    return SCORE
 
 
 # Bird
@@ -100,6 +110,9 @@ class Bird(pygame.sprite.Sprite):
         else:
             self.image = pygame.transform.rotate(self.images[self.index], -70)
 
+        if not GAME_OVER and not FLYING:
+            self.image = pygame.transform.rotate(self.images[self.index], 0)
+
 
 class Pipe(pygame.sprite.Sprite):
     def __init__(self, x, y, position):
@@ -120,11 +133,38 @@ class Pipe(pygame.sprite.Sprite):
             self.kill()
 
 
+# Restart Button
+class Button:
+    def __init__(self, x, y, image):
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.topleft = [x, y]
+
+    def draw(self):
+        global ZOOM
+        # Get mouse pos
+        pos = pygame.mouse.get_pos()
+
+        # Check if mouse is over the button
+        action = False
+
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0]:
+                action = True
+
+        # Draw button
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+
+        return action
+
+
 bird_group = pygame.sprite.Group()
 pipe_group = pygame.sprite.Group()
 
 flappy = Bird(100, int(SCREEN_HEIGHT / 2))
 bird_group.add(flappy)
+
+button = Button(SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT // 2 - 60, button_img)
 
 # Game Loop
 run = True
@@ -160,12 +200,16 @@ while run:
                 SCORE += 1
                 PASS_PIPE = False
 
-    draw_text(str(SCORE), font, white, int(SCREEN_WIDTH / 2), 20)
+    draw_text(str(SCORE), font, white, int(SCREEN_WIDTH / 2) - 30, 20)
 
     # Ground Collision
     if flappy.rect.bottom > 555:
         GAME_OVER = True
         FLYING = False
+
+    # Ceiling Collision
+    if flappy.rect.top <= 0:
+        GAME_OVER = True
 
     # Pipe Collision
     if pygame.sprite.groupcollide(bird_group, pipe_group, False, False):
@@ -176,7 +220,7 @@ while run:
         # Generate new pipes
         time_now = pygame.time.get_ticks()
         if time_now - LAST_PIPE > PIPE_FREQUENCY:
-            pipe_height = randint(-100, 100)
+            pipe_height = randint(-150, 100)
             btm_pipe = Pipe(SCREEN_WIDTH, int(SCREEN_HEIGHT / 2) + pipe_height, -1)
             top_pipe = Pipe(SCREEN_WIDTH, int(SCREEN_HEIGHT / 2) + pipe_height, 1)
             pipe_group.add(btm_pipe)
@@ -188,6 +232,12 @@ while run:
         GROUND_SCROLL -= SCROLL_SPEED
         if abs(GROUND_SCROLL) > 35:
             GROUND_SCROLL = 0
+
+    # GameOver and Restart
+    if GAME_OVER:
+        if button.draw():
+            GAME_OVER = False
+            SCORE = reset_game()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
