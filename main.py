@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 from random import randint
+from test import scores_db
 
 pygame.init()
 
@@ -19,6 +20,7 @@ LAST_PIPE = pygame.time.get_ticks()
 SCORE = 0
 PASS_PIPE = False
 ZOOM = False
+SCORE_CHECK = True
 
 # Font
 font = pygame.font.SysFont("Bauhaus 93", 60)
@@ -214,7 +216,6 @@ while run:
     # Pipe Collision
     if pygame.sprite.groupcollide(bird_group, pipe_group, False, False):
         GAME_OVER = True
-        # FLYING = False
 
     if FLYING and not GAME_OVER:
         # Generate new pipes
@@ -235,9 +236,21 @@ while run:
 
     # GameOver and Restart
     if GAME_OVER:
+        draw_text(
+            f"HIGHEST : {str(scores_db.highscore())}",
+            font,
+            white,
+            int(SCREEN_WIDTH / 2) - 140,
+            100,
+        )
+        if SCORE_CHECK:
+            scores_db.score_upload(SCORE)
+            SCORE_CHECK = False
+
         if button.draw():
             GAME_OVER = False
             SCORE = reset_game()
+            SCORE_CHECK = True
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
