@@ -1,20 +1,22 @@
 import pygame
 from pygame.locals import *
 from random import randint
-from test import scores_db
+from db  import scores_db
+import ctypes
 
 pygame.init()
+ctypes.windll.user32.SetProcessDPIAware()
 
 # Game Variables
-SCREEN_WIDTH = 650
-SCREEN_HEIGHT = 685
+SCREEN_WIDTH = 864
+SCREEN_HEIGHT = 936
 CLOCK = pygame.time.Clock()
 FPS = 60
 SCROLL_SPEED = 4
 GROUND_SCROLL = 0
 FLYING = False
 GAME_OVER = False
-PIPE_GAP = 150
+PIPE_GAP = 175
 PIPE_FREQUENCY = 1750  # millisec
 LAST_PIPE = pygame.time.get_ticks()
 SCORE = 0
@@ -31,6 +33,7 @@ white = (255, 255, 255)
 # Game Screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Flappy Bird")
+
 
 # Load Images
 bg = pygame.image.load("img/bg.png")
@@ -77,7 +80,7 @@ class Bird(pygame.sprite.Sprite):
             if self.vel > 8:
                 self.vel = 8
 
-            if self.rect.bottom < 555:
+            if self.rect.bottom < 768:
                 self.rect.y += int(self.vel)
 
         if GAME_OVER == False:
@@ -178,7 +181,7 @@ while run:
     screen.blit(bg, (0, 0))
 
     # Draw Ground
-    screen.blit(ground, (GROUND_SCROLL, 555))
+    screen.blit(ground, (GROUND_SCROLL, 768))
 
     # Draw Flappy
     bird_group.draw(screen)
@@ -205,17 +208,19 @@ while run:
     draw_text(str(SCORE), font, white, int(SCREEN_WIDTH / 2) - 30, 20)
 
     # Ground Collision
-    if flappy.rect.bottom > 555:
+    if flappy.rect.bottom >= 768:
         GAME_OVER = True
         FLYING = False
 
     # Ceiling Collision
     if flappy.rect.top <= 0:
         GAME_OVER = True
+        FLYING = False
 
     # Pipe Collision
     if pygame.sprite.groupcollide(bird_group, pipe_group, False, False):
         GAME_OVER = True
+        FLYING = False
 
     if FLYING and not GAME_OVER:
         # Generate new pipes
@@ -229,7 +234,7 @@ while run:
             LAST_PIPE = time_now
 
         # Scroll ground
-        screen.blit(ground, (GROUND_SCROLL, 555))
+        #screen.blit(ground, (GROUND_SCROLL, 555))
         GROUND_SCROLL -= SCROLL_SPEED
         if abs(GROUND_SCROLL) > 35:
             GROUND_SCROLL = 0
@@ -255,8 +260,10 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+        if event.type == pygame.SCALED:
+            pygame.display.toggle_fullscreen()
         if (
-            (event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN)
+            (event.type == pygame.MOUSEBUTTONDOWN or pygame.key.get_pressed()[K_SPACE])
             and FLYING == False
             and GAME_OVER == False
         ):
