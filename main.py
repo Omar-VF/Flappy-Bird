@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 from random import randint
-from db  import scores_db
+from db import scores_db
 import ctypes
 
 pygame.init()
@@ -234,7 +234,7 @@ while run:
             LAST_PIPE = time_now
 
         # Scroll ground
-        #screen.blit(ground, (GROUND_SCROLL, 555))
+        # screen.blit(ground, (GROUND_SCROLL, 555))
         GROUND_SCROLL -= SCROLL_SPEED
         if abs(GROUND_SCROLL) > 35:
             GROUND_SCROLL = 0
@@ -260,8 +260,6 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-        if event.type == pygame.SCALED:
-            pygame.display.toggle_fullscreen()
         if (
             (event.type == pygame.MOUSEBUTTONDOWN or pygame.key.get_pressed()[K_SPACE])
             and FLYING == False
