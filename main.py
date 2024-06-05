@@ -17,11 +17,10 @@ GROUND_SCROLL = 0
 FLYING = False
 GAME_OVER = False
 PIPE_GAP = 175
-PIPE_FREQUENCY = 1750  # millisec
+PIPE_FREQUENCY = 1500  # millisec
 LAST_PIPE = pygame.time.get_ticks()
 SCORE = 0
 PASS_PIPE = False
-ZOOM = False
 SCORE_CHECK = True
 
 # Font
@@ -39,6 +38,9 @@ pygame.display.set_caption("Flappy Bird")
 bg = pygame.image.load("img/bg.png")
 ground = pygame.image.load("img/ground.png")
 button_img = pygame.image.load("img/restart.png")
+easy_img = pygame.image.load("img/Easy.png")
+medium_img = pygame.image.load("img/Medium.png")
+hard_img = pygame.image.load("img/Hard.png")
 
 
 # Text
@@ -146,7 +148,6 @@ class Button:
         self.rect.topleft = [x, y]
 
     def draw(self):
-        global ZOOM
         # Get mouse pos
         pos = pygame.mouse.get_pos()
 
@@ -163,6 +164,78 @@ class Button:
         return action
 
 
+class EasyMode:
+    def __init__(self, x, y, image):
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.topleft = [x, y]
+
+    def draw(self):
+        global FLYING, PIPE_GAP, PIPE_FREQUENCY
+        # Get mouse pos
+        pos = pygame.mouse.get_pos()
+
+        # Check if mouse is over the button
+
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0]:
+                FLYING = True
+                PIPE_GAP = 200
+                PIPE_FREQUENCY = 1750
+                print("Easy")
+
+        # Draw button
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+
+
+class MediumMode:
+    def __init__(self, x, y, image):
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.topleft = [x, y]
+
+    def draw(self):
+        global FLYING, PIPE_GAP, PIPE_FREQUENCY
+        # Get mouse pos
+        pos = pygame.mouse.get_pos()
+
+        # Check if mouse is over the button
+
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0]:
+                FLYING = True
+                PIPE_GAP = 175
+                PIPE_FREQUENCY = 1500
+                print("Medium")
+
+        # Draw button
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+
+
+class HardMode:
+    def __init__(self, x, y, image):
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.topleft = [x, y]
+
+    def draw(self):
+        global FLYING, PIPE_GAP, PIPE_FREQUENCY
+        # Get mouse pos
+        pos = pygame.mouse.get_pos()
+
+        # Check if mouse is over the button
+
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0]:
+                FLYING = True
+                PIPE_GAP = 150
+                PIPE_FREQUENCY = 1300
+                print("Hard")
+
+        # Draw button
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+
+
 bird_group = pygame.sprite.Group()
 pipe_group = pygame.sprite.Group()
 
@@ -170,6 +243,10 @@ flappy = Bird(100, int(SCREEN_HEIGHT / 2))
 bird_group.add(flappy)
 
 button = Button(SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT // 2 - 60, button_img)
+
+easy_button = EasyMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) + 150, easy_img)
+medium_button = MediumMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) - 100, medium_img)
+hard_button = HardMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) - 350, hard_img)
 
 # Game Loop
 run = True
@@ -190,6 +267,12 @@ while run:
     # Draw Pipes
     pipe_group.draw(screen)
     pipe_group.update()
+
+    # Draw difficulty buttons
+    if not GAME_OVER and not FLYING:
+        easy_button.draw()
+        medium_button.draw()
+        hard_button.draw()
 
     # Score Check
     if len(pipe_group):
@@ -226,7 +309,7 @@ while run:
         # Generate new pipes
         time_now = pygame.time.get_ticks()
         if time_now - LAST_PIPE > PIPE_FREQUENCY:
-            pipe_height = randint(-150, 100)
+            pipe_height = randint(-200, 150)
             btm_pipe = Pipe(SCREEN_WIDTH, int(SCREEN_HEIGHT / 2) + pipe_height, -1)
             top_pipe = Pipe(SCREEN_WIDTH, int(SCREEN_HEIGHT / 2) + pipe_height, 1)
             pipe_group.add(btm_pipe)
@@ -234,7 +317,6 @@ while run:
             LAST_PIPE = time_now
 
         # Scroll ground
-        # screen.blit(ground, (GROUND_SCROLL, 555))
         GROUND_SCROLL -= SCROLL_SPEED
         if abs(GROUND_SCROLL) > 35:
             GROUND_SCROLL = 0
@@ -260,12 +342,12 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-        if (
+        """if (
             (event.type == pygame.MOUSEBUTTONDOWN or pygame.key.get_pressed()[K_SPACE])
             and FLYING == False
             and GAME_OVER == False
         ):
-            FLYING = True
+            FLYING = True"""
 
     pygame.display.update()
 
