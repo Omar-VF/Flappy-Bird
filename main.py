@@ -1,4 +1,5 @@
 import pygame
+import pygame.image
 from pygame.locals import *
 from random import randint
 from db import scores_db
@@ -41,9 +42,14 @@ pygame.display.set_caption("Flappy Bird")
 bg = pygame.image.load("img/bg.png")
 ground = pygame.image.load("img/ground.png")
 button_img = pygame.image.load("img/restart.png")
+
 easy_img = pygame.image.load("img/Easy.png")
 medium_img = pygame.image.load("img/Medium.png")
 hard_img = pygame.image.load("img/Hard.png")
+
+easy_img_alt = pygame.image.load("img/Easy_alt.png")
+medium_img_alt = pygame.image.load("img/Medium_alt.png")
+hard_img_alt = pygame.image.load("img/Hard_alt.png")
 
 
 # Text
@@ -168,8 +174,12 @@ class Button:
 
 
 class EasyMode:
-    def __init__(self, x, y, image):
-        self.image = image
+    def __init__(self, x, y, focused, image):
+        self.focused = focused
+        if self.focused == False:
+            self.image = image
+        else:
+            self.image = easy_img_alt
         self.rect = self.image.get_rect()
         self.rect.topleft = [x, y]
 
@@ -190,10 +200,13 @@ class EasyMode:
         # Draw button
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
-
 class MediumMode:
-    def __init__(self, x, y, image):
-        self.image = image
+    def __init__(self, x, y, focused, image):
+        self.focused = focused
+        if self.focused == False:
+            self.image = image
+        else:
+            self.image = medium_img_alt
         self.rect = self.image.get_rect()
         self.rect.topleft = [x, y]
 
@@ -215,9 +228,14 @@ class MediumMode:
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
 
+
 class HardMode:
-    def __init__(self, x, y, image):
-        self.image = image
+    def __init__(self, x, y, focused, image):
+        self.focused = focused
+        if self.focused == False:
+            self.image = image
+        else:
+            self.image = hard_img_alt
         self.rect = self.image.get_rect()
         self.rect.topleft = [x, y]
 
@@ -239,6 +257,7 @@ class HardMode:
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
 
+
 bird_group = pygame.sprite.Group()
 pipe_group = pygame.sprite.Group()
 
@@ -247,9 +266,6 @@ bird_group.add(flappy)
 
 button = Button(SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT // 2 - 60, button_img)
 
-easy_button = EasyMode(SCREEN_WIDTH - 312, (SCREEN_HEIGHT // 2) + 150, easy_img)
-medium_button = MediumMode(SCREEN_WIDTH - 319, (SCREEN_HEIGHT // 2) - 110, medium_img)
-hard_button = HardMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) - 350, hard_img)
 
 # Game Loop
 run = True
@@ -271,23 +287,44 @@ while run:
     pipe_group.draw(screen)
     pipe_group.update()
 
+
+    # Cycling through difficulties
+    if pygame.key.get_pressed()[K_DOWN] and not SWITCH:
+        SWITCH = True
+        DIFFICULTY_COUNT += 1
+        print(DIFFICULTY_COUNT % 3)
+    if pygame.key.get_pressed()[K_UP] and not SWITCH:
+        SWITCH = True
+        DIFFICULTY_COUNT -= 1
+        print(DIFFICULTY_COUNT % 3)
+    elif not pygame.key.get_pressed()[K_DOWN] and not pygame.key.get_pressed()[K_UP] and SWITCH:
+        SWITCH = False
+        DIFFICULTY_COUNT += 90
+
+    if DIFFICULTY_COUNT != -1:
+        if DIFFICULTY_COUNT%3 == 0:
+            easy_button = EasyMode(SCREEN_WIDTH - 312, (SCREEN_HEIGHT // 2) - 350, True, easy_img)
+            medium_button = MediumMode(SCREEN_WIDTH - 319, (SCREEN_HEIGHT // 2) - 110, False, medium_img)
+            hard_button = HardMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) +150, False, hard_img)
+        elif DIFFICULTY_COUNT%3 == 1:
+            easy_button = EasyMode(SCREEN_WIDTH - 312, (SCREEN_HEIGHT // 2) - 350, False, easy_img)
+            medium_button = MediumMode(SCREEN_WIDTH - 319, (SCREEN_HEIGHT // 2) - 110, True, medium_img)
+            hard_button = HardMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) +150, False, hard_img)
+        elif DIFFICULTY_COUNT%3 == 2:
+            easy_button = EasyMode(SCREEN_WIDTH - 312, (SCREEN_HEIGHT // 2) - 350, False, easy_img)
+            medium_button = MediumMode(SCREEN_WIDTH - 319, (SCREEN_HEIGHT // 2) - 110, False, medium_img)
+            hard_button = HardMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) + 150, True, hard_img)
+    else:
+        easy_button = EasyMode(SCREEN_WIDTH - 312, (SCREEN_HEIGHT // 2) - 350, False, easy_img)
+        medium_button = MediumMode(SCREEN_WIDTH - 319, (SCREEN_HEIGHT // 2) - 110, False,medium_img)
+        hard_button = HardMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) + 150, False, hard_img)
+
     # Draw difficulty buttons
     if not GAME_OVER and not FLYING:
         easy_button.draw()
         medium_button.draw()
         hard_button.draw()
 
-    # Cycling through difficulties
-    difficulty_icons = []
-    difficulty_list = ["img/Easy_alt.png", "img/Medium_alt.png", "img/Hard_alt.png"]
-    if pygame.key.get_pressed()[K_DOWN] and not SWITCH:
-        SWITCH = True
-        DIFFICULTY_COUNT += 1
-        print(DIFFICULTY_COUNT % 3)
-    elif not pygame.key.get_pressed()[K_DOWN] and SWITCH:
-        SWITCH = False
-    if DIFFICULTY_COUNT > -1:
-        easy_img = pygame.image.load(difficulty_list[DIFFICULTY_COUNT % 3])
 
     # Score Check
     if len(pipe_group):
