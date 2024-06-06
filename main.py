@@ -178,6 +178,7 @@ class Button:
         return action
 
 
+# Easy Difficulty
 class EasyMode:
     def __init__(self, x, y, focused, image):
         self.focused = focused
@@ -213,6 +214,7 @@ class EasyMode:
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
 
+# Medium Difficulty
 class MediumMode:
     def __init__(self, x, y, focused, image):
         self.focused = focused
@@ -248,6 +250,7 @@ class MediumMode:
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
 
+# Hard difficulty
 class HardMode:
     def __init__(self, x, y, focused, image):
         self.focused = focused
@@ -327,6 +330,7 @@ while run:
         SWITCH = False
         DIFFICULTY_COUNT += 90
 
+    # Changing difficulty icons when in focus
     if DIFFICULTY_COUNT != -1:
         if DIFFICULTY_COUNT % 3 == 0:
             easy_button = EasyMode(
@@ -427,6 +431,7 @@ while run:
         if SCORE_CHECK:
             difficulties = ["Easy", "Medium", "Hard"]
             difficulty = difficulties[DIFFICULTY_COUNT % 3]
+            # Adding current date
             DATE = datetime.date.today()
             scores_db.score_upload(SCORE, difficulty, DATE)
             SCORE_CHECK = False
