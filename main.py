@@ -200,6 +200,7 @@ class EasyMode:
         # Draw button
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
+
 class MediumMode:
     def __init__(self, x, y, focused, image):
         self.focused = focused
@@ -228,7 +229,6 @@ class MediumMode:
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
 
-
 class HardMode:
     def __init__(self, x, y, focused, image):
         self.focused = focused
@@ -255,7 +255,6 @@ class HardMode:
 
         # Draw button
         screen.blit(self.image, (self.rect.x, self.rect.y))
-
 
 
 bird_group = pygame.sprite.Group()
@@ -287,7 +286,6 @@ while run:
     pipe_group.draw(screen)
     pipe_group.update()
 
-
     # Cycling through difficulties
     if pygame.key.get_pressed()[K_DOWN] and not SWITCH:
         SWITCH = True
@@ -297,34 +295,61 @@ while run:
         SWITCH = True
         DIFFICULTY_COUNT -= 1
         print(DIFFICULTY_COUNT % 3)
-    elif not pygame.key.get_pressed()[K_DOWN] and not pygame.key.get_pressed()[K_UP] and SWITCH:
+    elif (
+        not pygame.key.get_pressed()[K_DOWN]
+        and not pygame.key.get_pressed()[K_UP]
+        and SWITCH
+    ):
         SWITCH = False
         DIFFICULTY_COUNT += 90
 
     if DIFFICULTY_COUNT != -1:
-        if DIFFICULTY_COUNT%3 == 0:
-            easy_button = EasyMode(SCREEN_WIDTH - 312, (SCREEN_HEIGHT // 2) - 350, True, easy_img)
-            medium_button = MediumMode(SCREEN_WIDTH - 319, (SCREEN_HEIGHT // 2) - 110, False, medium_img)
-            hard_button = HardMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) +150, False, hard_img)
-        elif DIFFICULTY_COUNT%3 == 1:
-            easy_button = EasyMode(SCREEN_WIDTH - 312, (SCREEN_HEIGHT // 2) - 350, False, easy_img)
-            medium_button = MediumMode(SCREEN_WIDTH - 319, (SCREEN_HEIGHT // 2) - 110, True, medium_img)
-            hard_button = HardMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) +150, False, hard_img)
-        elif DIFFICULTY_COUNT%3 == 2:
-            easy_button = EasyMode(SCREEN_WIDTH - 312, (SCREEN_HEIGHT // 2) - 350, False, easy_img)
-            medium_button = MediumMode(SCREEN_WIDTH - 319, (SCREEN_HEIGHT // 2) - 110, False, medium_img)
-            hard_button = HardMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) + 150, True, hard_img)
+        if DIFFICULTY_COUNT % 3 == 0:
+            easy_button = EasyMode(
+                SCREEN_WIDTH - 312, (SCREEN_HEIGHT // 2) - 350, True, easy_img
+            )
+            medium_button = MediumMode(
+                SCREEN_WIDTH - 319, (SCREEN_HEIGHT // 2) - 110, False, medium_img
+            )
+            hard_button = HardMode(
+                SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) + 150, False, hard_img
+            )
+        elif DIFFICULTY_COUNT % 3 == 1:
+            easy_button = EasyMode(
+                SCREEN_WIDTH - 312, (SCREEN_HEIGHT // 2) - 350, False, easy_img
+            )
+            medium_button = MediumMode(
+                SCREEN_WIDTH - 319, (SCREEN_HEIGHT // 2) - 110, True, medium_img
+            )
+            hard_button = HardMode(
+                SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) + 150, False, hard_img
+            )
+        elif DIFFICULTY_COUNT % 3 == 2:
+            easy_button = EasyMode(
+                SCREEN_WIDTH - 312, (SCREEN_HEIGHT // 2) - 350, False, easy_img
+            )
+            medium_button = MediumMode(
+                SCREEN_WIDTH - 319, (SCREEN_HEIGHT // 2) - 110, False, medium_img
+            )
+            hard_button = HardMode(
+                SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) + 150, True, hard_img
+            )
     else:
-        easy_button = EasyMode(SCREEN_WIDTH - 312, (SCREEN_HEIGHT // 2) - 350, False, easy_img)
-        medium_button = MediumMode(SCREEN_WIDTH - 319, (SCREEN_HEIGHT // 2) - 110, False,medium_img)
-        hard_button = HardMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) + 150, False, hard_img)
+        easy_button = EasyMode(
+            SCREEN_WIDTH - 312, (SCREEN_HEIGHT // 2) - 350, False, easy_img
+        )
+        medium_button = MediumMode(
+            SCREEN_WIDTH - 319, (SCREEN_HEIGHT // 2) - 110, False, medium_img
+        )
+        hard_button = HardMode(
+            SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) + 150, False, hard_img
+        )
 
     # Draw difficulty buttons
     if not GAME_OVER and not FLYING:
         easy_button.draw()
         medium_button.draw()
         hard_button.draw()
-
 
     # Score Check
     if len(pipe_group):
