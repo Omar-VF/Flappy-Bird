@@ -22,6 +22,9 @@ LAST_PIPE = pygame.time.get_ticks()
 SCORE = 0
 PASS_PIPE = False
 SCORE_CHECK = True
+DIFFICULTY_COUNT = -1
+SWITCH = False
+
 
 # Font
 font = pygame.font.SysFont("Bauhaus 93", 60)
@@ -244,8 +247,8 @@ bird_group.add(flappy)
 
 button = Button(SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT // 2 - 60, button_img)
 
-easy_button = EasyMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) + 150, easy_img)
-medium_button = MediumMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) - 100, medium_img)
+easy_button = EasyMode(SCREEN_WIDTH - 312, (SCREEN_HEIGHT // 2) + 150, easy_img)
+medium_button = MediumMode(SCREEN_WIDTH - 319, (SCREEN_HEIGHT // 2) - 110, medium_img)
 hard_button = HardMode(SCREEN_WIDTH - 300, (SCREEN_HEIGHT // 2) - 350, hard_img)
 
 # Game Loop
@@ -273,6 +276,18 @@ while run:
         easy_button.draw()
         medium_button.draw()
         hard_button.draw()
+
+    # Cycling through difficulties
+    difficulty_icons = []
+    difficulty_list = ["img/Easy_alt.png", "img/Medium_alt.png", "img/Hard_alt.png"]
+    if pygame.key.get_pressed()[K_DOWN] and not SWITCH:
+        SWITCH = True
+        DIFFICULTY_COUNT += 1
+        print(DIFFICULTY_COUNT % 3)
+    elif not pygame.key.get_pressed()[K_DOWN] and SWITCH:
+        SWITCH = False
+    if DIFFICULTY_COUNT > -1:
+        easy_img = pygame.image.load(difficulty_list[DIFFICULTY_COUNT % 3])
 
     # Score Check
     if len(pipe_group):
