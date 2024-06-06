@@ -4,9 +4,12 @@ from pygame.locals import *
 from random import randint
 from db import scores_db
 import ctypes
+import datetime
+
 
 pygame.init()
 ctypes.windll.user32.SetProcessDPIAware()
+
 
 # Game Variables
 SCREEN_WIDTH = 864
@@ -59,10 +62,12 @@ def draw_text(text, font, text_col, x, y):
 
 
 def reset_game():
+    global DIFFICULTY_COUNT
     pipe_group.empty()
     flappy.rect.x = 100
     flappy.rect.y = int(SCREEN_HEIGHT / 2)
     SCORE = 0
+    DIFFICULTY_COUNT = -1
     return SCORE
 
 
@@ -191,11 +196,18 @@ class EasyMode:
         # Check if mouse is over the button
 
         if self.rect.collidepoint(pos):
+            global DIFFICULTY_COUNT
+            self.image = easy_img_alt
+            DIFFICULTY_COUNT = 0
             if pygame.mouse.get_pressed()[0]:
                 FLYING = True
                 PIPE_GAP = 200
                 PIPE_FREQUENCY = 1750
-                print("Easy")
+
+        if pygame.key.get_pressed()[K_SPACE] and self.focused:
+            FLYING = True
+            PIPE_GAP = 200
+            PIPE_FREQUENCY = 1750
 
         # Draw button
         screen.blit(self.image, (self.rect.x, self.rect.y))
@@ -219,11 +231,18 @@ class MediumMode:
         # Check if mouse is over the button
 
         if self.rect.collidepoint(pos):
+            global DIFFICULTY_COUNT
+            self.image = medium_img_alt
+            DIFFICULTY_COUNT = 1
             if pygame.mouse.get_pressed()[0]:
                 FLYING = True
                 PIPE_GAP = 175
                 PIPE_FREQUENCY = 1500
-                print("Medium")
+
+        if pygame.key.get_pressed()[K_SPACE] and self.focused:
+            FLYING = True
+            PIPE_GAP = 175
+            PIPE_FREQUENCY = 1500
 
         # Draw button
         screen.blit(self.image, (self.rect.x, self.rect.y))
@@ -247,11 +266,18 @@ class HardMode:
         # Check if mouse is over the button
 
         if self.rect.collidepoint(pos):
+            global DIFFICULTY_COUNT
+            self.image = hard_img_alt
+            DIFFICULTY_COUNT = 2
             if pygame.mouse.get_pressed()[0]:
                 FLYING = True
                 PIPE_GAP = 150
                 PIPE_FREQUENCY = 1300
-                print("Hard")
+
+        if pygame.key.get_pressed()[K_SPACE] and self.focused:
+            FLYING = True
+            PIPE_GAP = 150
+            PIPE_FREQUENCY = 1300
 
         # Draw button
         screen.blit(self.image, (self.rect.x, self.rect.y))
@@ -287,14 +313,12 @@ while run:
     pipe_group.update()
 
     # Cycling through difficulties
-    if pygame.key.get_pressed()[K_DOWN] and not SWITCH:
+    if pygame.key.get_pressed()[K_DOWN] and not SWITCH and not GAME_OVER and not FLYING:
         SWITCH = True
         DIFFICULTY_COUNT += 1
-        print(DIFFICULTY_COUNT % 3)
-    if pygame.key.get_pressed()[K_UP] and not SWITCH:
+    if pygame.key.get_pressed()[K_UP] and not SWITCH and not GAME_OVER and not FLYING:
         SWITCH = True
         DIFFICULTY_COUNT -= 1
-        print(DIFFICULTY_COUNT % 3)
     elif (
         not pygame.key.get_pressed()[K_DOWN]
         and not pygame.key.get_pressed()[K_UP]
@@ -400,16 +424,20 @@ while run:
 
     # GameOver and Restart
     if GAME_OVER:
+        if SCORE_CHECK:
+            difficulties = ["Easy", "Medium", "Hard"]
+            difficulty = difficulties[DIFFICULTY_COUNT % 3]
+            DATE = datetime.date.today()
+            scores_db.score_upload(SCORE, difficulty, DATE)
+            SCORE_CHECK = False
+
         draw_text(
-            f"HIGHEST : {str(scores_db.highscore())}",
+            f"HIGHEST : {str(scores_db.highscore(difficulty))}",
             font,
             white,
             int(SCREEN_WIDTH / 2) - 140,
             100,
         )
-        if SCORE_CHECK:
-            scores_db.score_upload(SCORE)
-            SCORE_CHECK = False
 
         if button.draw():
             GAME_OVER = False
@@ -419,12 +447,6 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-        """if (
-            (event.type == pygame.MOUSEBUTTONDOWN or pygame.key.get_pressed()[K_SPACE])
-            and FLYING == False
-            and GAME_OVER == False
-        ):
-            FLYING = True"""
 
     pygame.display.update()
 
